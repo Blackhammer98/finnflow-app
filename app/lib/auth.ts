@@ -44,7 +44,7 @@ export const { handlers , signIn , signOut , auth } = NextAuth({
         
     ],
 
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: "niktiSecr3t",
     session :  {
         strategy: 'jwt',
     },

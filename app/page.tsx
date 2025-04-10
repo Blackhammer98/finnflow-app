@@ -1,4 +1,4 @@
-import prisma from "@/db/src/prisma";
+
  import Link from "next/link";
 
  
@@ -8,7 +8,7 @@ export default function Home() {
       {/* AppBar */}
       <header className="bg-blue-500 text-white py-4 px-6 flex items-center justify-between">
         <div className="text-xl font-semibold">FinFlow App</div>
-        <Link href="/login" className="bg-white text-blue-500 font-semibold py-2 px-4 rounded-md hover:bg-blue-100">
+        <Link href="/userAuth/login" className="bg-white text-blue-500 font-semibold py-2 px-4 rounded-md hover:bg-blue-100">
           Login
         </Link>
       </header>
