@@ -19,4 +19,45 @@ model User {
   email String  @unique
   name String
   password String 
+  OnRampTransaction OnRampTransaction[]
+  Balance           Balance[]
+  sentTransactions  Transaction[]   @relation("Sender")    
+  receivedTransactions Transaction[]    @relation("Receiver")
+  
+}
+
+model OnRampTransaction {
+  id        Int          @id @default(autoincrement())
+  status    OnRampStatus
+  token     String       @unique
+  provider  String
+  amount    Int
+  startTime DateTime
+  userId    Int
+  user      User         @relation(fields: [userId], references: [id])
+}
+model Transaction {
+  id           Int      @id @default(autoincrement())
+  senderId     Int
+  receiverId   Int
+  amount       Int
+  status       String   @default("Completed")
+  type         String   @default("Transfer")
+  createdAt    DateTime @default(now())
+  sender       User     @relation("Sender", fields: [senderId], references: [id])
+  receiver     User     @relation("Receiver", fields: [receiverId], references: [id])
+}
+ 
+model Balance {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  amount Int
+  locked Int
+  user   User @relation(fields: [userId], references: [id])
+} 
+
+enum OnRampStatus {
+  Success
+  Failure
+  Processing
 }

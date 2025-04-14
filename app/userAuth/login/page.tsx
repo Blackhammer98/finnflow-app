@@ -2,7 +2,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import Link from "next/link";
+
 import { useSearchParams,useRouter } from "next/navigation";
 
 import { useState } from "react";
@@ -13,7 +13,7 @@ export default function LoginPage() {
     const [error , setError] = useState<string | null>(null);
     const router = useRouter();
     const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get("callbackUrl") || "/"
+    const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
  
     const handleSubmit = async (e:React.FormEvent) => {
        e.preventDefault();
