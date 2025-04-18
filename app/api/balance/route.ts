@@ -21,7 +21,9 @@ export async function GET() {
             return NextResponse.json({ error: 'Balance not found for user.' }, { status: 404 });
         }
 
-        return NextResponse.json({ totalBalance: balance.amount, locked: balance.locked  });
+        return NextResponse.json({
+             totalBalance: balance.amount / 100,
+              locked: balance.locked / 100  });
     } catch (error: any) {
         console.error('Error fetching balance:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

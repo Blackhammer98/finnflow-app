@@ -166,9 +166,30 @@ export default function TransferPage() {
                   <p className="text-red-500">{balanceDetails.error}</p>
               ) : (
                   <>
-                      <p>Total Balance: ₹{balanceDetails.totalBalance}</p>
-                      <p>Unlocked Balance: ₹{balanceDetails.unlockedBalance}</p>
-                      <p>Locked Balance: ₹{balanceDetails.lockedBalance}</p>
+                      <div className=" flex justify-between border-b-2 border-slate-100 pb-2">
+                           <div>
+                            Total Balance:
+                           </div>
+                           <div>
+                           ₹{(balanceDetails?.totalBalance)?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                           </div>
+                      </div>
+                      <div className=" flex justify-between border-b-2 border-slate-100 py-2">
+                           <div>
+                           Unlocked Balance: 
+                           </div>
+                           <div>
+                           ₹{(balanceDetails?.unlockedBalance)?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                           </div>
+                      </div>
+                      <div className=" flex justify-between border-b-2 border-slate-100 py-2">
+                           <div>
+                           Locked Balance: 
+                           </div>
+                           <div>
+                           ₹{(balanceDetails?.lockedBalance)?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                           </div>
+                      </div>
                   </>
               )}
           </div>
