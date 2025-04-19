@@ -1,5 +1,6 @@
 "use client";
 
+import AddMoneyModal from "@/app/components/AddMoneyModal";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -30,6 +31,16 @@ export default function TransferPage() {
       error : undefined,
       loading: true
     });
+      
+    const [isAddMoneyModalOpen , setIsAddMoneyModalOpen] = useState(false)
+
+    const openAddmoneyModal = () => {
+        setIsAddMoneyModalOpen(true)
+    }
+
+    const closeAddmoneyModal = () => {
+        setIsAddMoneyModalOpen(false)
+    }
 
     useEffect(() => { 
         const fetchBalance = async () => {
@@ -71,9 +82,9 @@ export default function TransferPage() {
           }
         };
         fetchBalance();
-    },[session?.user?.id])
+    },[session?.user?.id ,  isAddMoneyModalOpen])
 
-    const handleSubmit = async(e : React.FormEvent) => {
+    const handleSubmitTransfer = async(e : React.FormEvent) => {
         e.preventDefault();
         setTransferResult(null);
 
@@ -114,7 +125,8 @@ export default function TransferPage() {
       {/* Fund Transfer Card */}
       <div className="w-1/2 border border-gray-200 rounded-lg shadow-sm bg-neutral-50">
           <h1 className="p-4 text-xl font-semibold">Transfer Funds</h1>
-          <form onSubmit={handleSubmit} className="p-4 space-y-4">
+         
+          <form onSubmit={handleSubmitTransfer} className="p-4 space-y-4">
               <div>
                   <label className="block text-gray-700 text-sm font-bold mb-2">
                       Recipient User ID:
@@ -193,7 +205,17 @@ export default function TransferPage() {
                   </>
               )}
           </div>
+          <div className="p-4">
+            <button
+                onClick={openAddmoneyModal}
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline "
+            >
+                Add Money
+            </button>
+        </div>
+          
       </div>
+      {isAddMoneyModalOpen && <AddMoneyModal onClose={closeAddmoneyModal} />}
   </div>
-    )
+    );
 }
