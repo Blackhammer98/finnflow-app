@@ -18,6 +18,20 @@ interface BalanceDetails {
   loading?: boolean;
 }
 
+interface Transaction {
+    id : number;
+    status  :string;
+    token : string;
+    provider  : string;
+    amount : number;
+    startTime  :string
+}
+
+interface TransactionHistory {
+    transactions : Transaction[];
+    error?: string;
+    loading : boolean;
+}
 export default function TransferPage() {
 
     const [recipientId , setRecipientId] = useState("");
@@ -31,6 +45,11 @@ export default function TransferPage() {
       error : undefined,
       loading: true
     });
+    const [transactionHistory , setTransactionHistory] = useState<TransactionHistory>({
+        transactions : [],
+        error : undefined,
+        loading : true
+    })
       
     const [isAddMoneyModalOpen , setIsAddMoneyModalOpen] = useState(false)
 
@@ -82,7 +101,43 @@ export default function TransferPage() {
           }
         };
         fetchBalance();
-    },[session?.user?.id ,  isAddMoneyModalOpen])
+    },[session?.user?.id ,  isAddMoneyModalOpen]);
+
+    useEffect(() => {
+     const fetchTransactions = async () => {
+        if(session?.user?.id) {
+
+            try {
+                const response = await fetch("/api/onRamp");
+                if(response.ok) {
+                    const data = await response.json();
+                    setTransactionHistory({
+                        transactions : data.transactions || [],
+                        error : undefined,
+                        loading  : false,
+                    });
+                } else {
+                    const errorData = await response.json();
+                    setTransactionHistory({
+                        transactions: [],
+                        error: errorData.error || 'Failed to fetch transaction history.',
+                        loading: false,
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching transactions:', error);
+            setTransactionHistory({
+              transactions: [],
+              error: 'An unexpected error occurred while fetching transaction history.',
+              loading: false,
+            });
+            }
+        } else {
+            setTransactionHistory(prevState => ({...prevState , loading: false}))
+        }
+     };
+     fetchTransactions();
+    },[session?.user?.id ])
 
     const handleSubmitTransfer = async(e : React.FormEvent) => {
         e.preventDefault();
@@ -118,10 +173,33 @@ export default function TransferPage() {
       setTransferResult({ error: 'An unexpected error occurred.' });
         }
     }
-
+     
+    const getStatusColor = (status: string) => {
+        switch(status.toUpperCase()) {
+          case 'COMPLETED':
+            return 'text-green-500';
+          case 'PENDING':
+            return 'text-yellow-500';
+          case 'FAILED':
+            return 'text-red-500';
+          default:
+            return 'text-gray-500';
+        }
+      };
+  
+      const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-IN', { 
+          day: '2-digit',
+          month: '2-digit', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      };
 
     return (
-      <div className="p-6 flex space-x-4">
+      <div className="p-6 flex  space-x-4">
       {/* Fund Transfer Card */}
       <div className="w-1/2 border border-gray-200 rounded-lg shadow-sm bg-neutral-50">
           <h1 className="p-4 text-xl font-semibold">Transfer Funds</h1>
@@ -215,6 +293,56 @@ export default function TransferPage() {
         </div>
           
       </div>
+       {/* Transaction History Card */}
+       <div className="w-full border border-gray-200 rounded-lg shadow-sm bg-neutral-50">
+          <h2 className="p-4 text-xl font-semibold">Transaction History</h2>
+          <div className="p-4">
+            {transactionHistory.loading ? (
+              <p>Loading transaction history...</p>
+            ) : transactionHistory.error ? (
+              <p className="text-red-500">{transactionHistory.error}</p>
+            ) : transactionHistory.transactions.length === 0 ? (
+              <p className="text-gray-500">No transaction history available.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white">
+                  <thead>
+                    <tr className="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                      <th className="py-3 px-6 text-left">ID</th>
+                      <th className="py-3 px-6 text-left">Status</th>
+                      <th className="py-3 px-6 text-left">Provider</th>
+                      <th className="py-3 px-6 text-right">Amount</th>
+                      <th className="py-3 px-6 text-right">Date & Time</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-600 text-sm">
+                    {transactionHistory.transactions.map((transaction) => (
+                      <tr key={transaction.id} className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="py-3 px-6 text-left">
+                          {transaction.id}
+                        </td>
+                        <td className="py-3 px-6 text-left">
+                          <span className={`font-medium ${getStatusColor(transaction.status)}`}>
+                            {transaction.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-6 text-left">
+                          {transaction.provider}
+                        </td>
+                        <td className="py-3 px-6 text-right">
+                          ₹{transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+                        <td className="py-3 px-6 text-right">
+                          {formatDate(transaction.startTime)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
       {isAddMoneyModalOpen && <AddMoneyModal onClose={closeAddmoneyModal} />}
   </div>
     );

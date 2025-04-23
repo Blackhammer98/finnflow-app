@@ -2,7 +2,7 @@
 import React, { useState } from "react"
 
 interface AddMoneyModalProps {
-    onClose : () => void
+    onClose : () => void;
 }
 
 interface AddMoneyResult {
