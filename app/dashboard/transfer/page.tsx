@@ -4,11 +4,7 @@ import AddMoneyModal from "@/app/components/AddMoneyModal";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-interface TranferResult {
-    message?  : string;
-    error? : string
-    transactionId? : number;
-} 
+
 
 interface BalanceDetails {
   totalBalance?  : number ;
@@ -34,9 +30,7 @@ interface TransactionHistory {
 }
 export default function TransferPage() {
 
-    const [recipientId , setRecipientId] = useState("");
-    const [amount , setAmount] = useState('');
-    const [transferResult  , setTransferResult] = useState<TranferResult | null>(null);
+   
     const {data: session} = useSession();
     const [balanceDetails , setBalanceDetails] = useState<BalanceDetails>({
       totalBalance  : 0 ,
@@ -52,6 +46,7 @@ export default function TransferPage() {
     })
       
     const [isAddMoneyModalOpen , setIsAddMoneyModalOpen] = useState(false)
+    const [refreshTrigger, setRefreshTrigger] = useState(0); 
 
     const openAddmoneyModal = () => {
         setIsAddMoneyModalOpen(true)
@@ -60,7 +55,10 @@ export default function TransferPage() {
     const closeAddmoneyModal = () => {
         setIsAddMoneyModalOpen(false)
     }
-
+    const handleTransactionSuccess = (transaction: any) => {
+     
+      setRefreshTrigger(prev => prev + 1);
+  };
     useEffect(() => { 
         const fetchBalance = async () => {
           if(session?.user?.id) {
@@ -101,7 +99,7 @@ export default function TransferPage() {
           }
         };
         fetchBalance();
-    },[session?.user?.id ,  isAddMoneyModalOpen]);
+    },[session?.user?.id ,  refreshTrigger]);
 
     useEffect(() => {
      const fetchTransactions = async () => {
@@ -137,50 +135,16 @@ export default function TransferPage() {
         }
      };
      fetchTransactions();
-    },[session?.user?.id ])
+    },[session?.user?.id , refreshTrigger ])
 
-    const handleSubmitTransfer = async(e : React.FormEvent) => {
-        e.preventDefault();
-        setTransferResult(null);
-
-        if(!recipientId || !amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-            setTransferResult({error : "Please provide a valid recipient ID and amount."})
-            return;
-        }
-
-        try {
-
-            const response = await fetch("/api/transfer" , {
-                method : "POST" ,
-                headers : {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ recipientId, amount }),
-            });
-
-            const data = await response.json();
-
-            if(response.ok) {
-                setTransferResult({ message: data.message, transactionId: data.transactionId });
-                setRecipientId('');
-                setAmount('');
-            } else {
-                setTransferResult({ error : data.error || 'Transfer failed.' });
-            }
-            
-        } catch (error:any) {
-            console.error('Error initiating transfer:', error);
-      setTransferResult({ error: 'An unexpected error occurred.' });
-        }
-    }
      
     const getStatusColor = (status: string) => {
         switch(status.toUpperCase()) {
-          case 'COMPLETED':
+          case 'SUCCESS':
             return 'text-green-500';
-          case 'PENDING':
+          case 'PROCESSING':
             return 'text-yellow-500';
-          case 'FAILED':
+          case 'FAILURE':
             return 'text-red-500';
           default:
             return 'text-gray-500';
@@ -200,51 +164,7 @@ export default function TransferPage() {
 
     return (
       <div className="p-6 flex  space-x-4">
-      {/* Fund Transfer Card */}
-      <div className="w-1/2 border border-gray-200 rounded-lg shadow-sm bg-neutral-50">
-          <h1 className="p-4 text-xl font-semibold">Transfer Funds</h1>
-         
-          <form onSubmit={handleSubmitTransfer} className="p-4 space-y-4">
-              <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Recipient User ID:
-                  </label>
-                  <input
-                      type="text"
-                      id="recipientId"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      value={recipientId}
-                      onChange={(e) => setRecipientId(e.target.value)}
-                      placeholder="Enter the Recipient's User ID"
-                  />
-              </div>
-              <div>
-                  <label htmlFor="amount" className="block text-gray-700 text-sm font-bold mb-2">
-                      Amount to Transfer (₹):
-                  </label>
-                  <input
-                      type="number"
-                      id="amount"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      placeholder="Enter amount"
-                  />
-              </div>
-              <button
-                  type="submit"
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                  Transfer
-              </button>
-          </form>
-          {transferResult?.message && (
-              <div className="p-4 mt-4 text-green-500">
-                  {transferResult.message} (Transaction ID: {transferResult.transactionId})
-              </div>
-          )}
-          {transferResult?.error && <div className="p-4 mt-4 text-red-500">{transferResult.error}</div>}
-      </div>
+      
 
        {/* Balance Details Card */}
        <div className="w-1/2 border border-gray-200 rounded-lg shadow-sm bg-neutral-50">
@@ -330,7 +250,7 @@ export default function TransferPage() {
                           {transaction.provider}
                         </td>
                         <td className="py-3 px-6 text-right">
-                          ₹{transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          +₹{transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td className="py-3 px-6 text-right">
                           {formatDate(transaction.startTime)}
@@ -343,7 +263,7 @@ export default function TransferPage() {
             )}
           </div>
         </div>
-      {isAddMoneyModalOpen && <AddMoneyModal onClose={closeAddmoneyModal} />}
+      {isAddMoneyModalOpen && <AddMoneyModal onClose={closeAddmoneyModal} onSuccess={handleTransactionSuccess} />}
   </div>
     );
 }

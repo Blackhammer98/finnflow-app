@@ -18,7 +18,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Invalid RecipientId or amount' }, { status: 400 });
         }
 
-        const amountToTransfer = parseFloat(amount);
+        const amountToTransfer = parseFloat(amount)*100;
         const senderIdInt = parseInt(senderId);
         const recipientIdInt = parseInt(recipientId);
 

@@ -1,5 +1,6 @@
 import { auth } from "@/app/lib/auth";
 import prisma from "@/db/src/prisma";
+
 import { NextResponse } from "next/server";
 
 
@@ -12,6 +13,7 @@ export async function GET() {
     }
 try {
     const userId = parseInt(session.user.id);
+    
     const transactions = await prisma.onRampTransaction.findMany({
         where : {userId : userId},
 
@@ -58,22 +60,49 @@ export async function POST(request : Request) {
         }
 
         const userId = parseInt(session.user.id);
+        const amountInPaisa = amount
         const token = (Math.random()*1000).toString();
         const transaction =  await prisma.onRampTransaction.create({
             data : {
                 status : "Processing",
                 token : token,
                 provider,
-                amount : amount*100,
+                amount : amountInPaisa,
                 startTime :new Date(),
                 userId
             }
         });
 
+        const existingBalance = await prisma.balance.findUnique({
+            where: {userId : userId}
+        });
+
+        if(existingBalance) {
+            await prisma.balance.update({
+                where : {userId:userId} , 
+                data :{
+                    amount : existingBalance.amount + amountInPaisa
+                }
+            });
+        } else {
+            await prisma.balance.create({
+                data : {
+                    userId,
+                    amount : amountInPaisa,
+                    locked : 0
+                }
+            });
+        }
+
+        const updatedTransaction = await prisma.onRampTransaction.update({
+           where : {id : transaction.id},
+           data : {status  : "Success"}
+        })
+
         return NextResponse.json({
             transaction:{
-                ...transaction , 
-                amount : transaction.amount/100
+                ...updatedTransaction , 
+                amount : updatedTransaction.amount/100
             }
         },{status:201});
     } catch (error) {

@@ -21,8 +21,8 @@ model User {
   password String 
   OnRampTransaction OnRampTransaction[]
   Balance           Balance[]
-  sentTransactions  Transaction[]   @relation("Sender")    
-  receivedTransactions Transaction[]    @relation("Receiver")
+  sentTransfers  Transaction[]   @relation("Sender")    
+  receivedTransfer Transaction[]    @relation("Receiver")
   
 }
 
