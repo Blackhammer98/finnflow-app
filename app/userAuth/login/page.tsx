@@ -50,13 +50,13 @@ const Login: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center gap-2 mb-12">
             <CircleDollarSign className="h-8 w-8 text-white" />
-            <span className="text-2xl font-bold text-white">PayBuddy</span>
+            <span className="text-2xl font-bold text-white">FinnFlow</span>
           </div>
 
           {/* Content */}
           <div className="relative z-10">
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Welcome back to PayBuddy
+              Welcome back to FinnFlow
             </h1>
             <p className="text-white/90 text-lg mb-12">
               Access your account securely and manage your finances with ease.
