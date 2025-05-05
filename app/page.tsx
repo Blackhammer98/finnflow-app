@@ -1,25 +1,16 @@
 
- import Link from "next/link";
+import Header from "./components/Header";
+import Hero from "./components/Hero";
 
  
 export default function Home() {
   return (
-    <div className="flex flex-col h-screen">
-      {/* AppBar */}
-      <header className="bg-blue-500 text-white py-4 px-6 flex items-center justify-between">
-        <div className="text-xl font-semibold">FinFlow App</div>
-        <Link href="/userAuth/login" className="bg-white text-blue-500 font-semibold py-2 px-4 rounded-md hover:bg-blue-100">
-          Login
-        </Link>
-      </header>
-
-      {/* Main Content Area (you can add more content here later) */}
-      <main className="flex-grow flex items-center justify-center bg-gray-100">
-        <div className="text-lg">Welcome to FinFlow!</div>
+    <div className="min-h-screen bg-indigo-950 text-white">
+      <Header />
+      <main>
+        <Hero />
       </main>
-
-      {/* Optional Footer */}
-      <footer className="bg-gray-200 text-gray-600 py-2 px-6 text-center">
+      <footer className=" text-gray-600 py-2 px-6 text-center">
         © 2025 FinFlow
       </footer>
     </div>
